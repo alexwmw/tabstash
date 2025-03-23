@@ -1,13 +1,15 @@
 import { createRoot } from 'react-dom/client';
 import PrimaryHeader from '../components/PrimaryHeader.jsx';
 import OptionsButton from '../components/OptionsButton.jsx';
+import PrimaryContent from '../components/PrimaryContent.jsx';
 
 function Popup() {
   return (
-    <div className="h-150 w-100 space-y-4">
+    <div className="flex w-100 flex-col space-y-4">
       <PrimaryHeader>
         <OptionsButton />
       </PrimaryHeader>
+      <PrimaryContent />
     </div>
   );
 }
