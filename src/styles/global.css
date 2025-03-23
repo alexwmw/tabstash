@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #0b0b49;
+}
+
+:root {
+
+}
+
+body {
+
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}

@@ -1,0 +1,37 @@
+# Node.js
+node_modules/
+
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# .env files
+.env
+.env.*.local
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Build and distribution
+build/
+dist/
+
+# Vite / Webpack
+.vite/
+webpack/
+
+# Next.js / React build
+.next/
+
+# TypeScript
+*.tsbuildinfo
+
+# Mac system files
+.DS_Store
+
+# IDEs and editors
+.vscode/
+.idea/
