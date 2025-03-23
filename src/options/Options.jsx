@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import PrimaryHeader from '../components/PrimaryHeader.jsx';
 
 function Options() {
   const [tab, setTab] = useState('general');
 
   return (
-    <div className="w-80 p-4">
-      <h1 className="text-xl font-bold">Settings</h1>
+    <div className="w-screen">
+      <PrimaryHeader />
       <div className="mt-2 flex space-x-2">
         <button className="tab-button" onClick={() => setTab('general')}>
           General
