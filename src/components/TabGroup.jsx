@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const TabIcon = ({ tab, isSaved }) => {
   return (
-    <a href={isSaved && tab.url}>
+    <a className="contents" href={isSaved && tab.url}>
       <img
         onClick={() => {
           if (!isSaved) {
@@ -114,13 +114,41 @@ const TabGroup = ({
   inputRef.current?.focus();
   const RestoreButtons = isSaved && (
     <>
-      <Button title={'Restore as group'} type={'small'}>
-        ➡️ group
-      </Button>
-      <Button title={'Restore as tabs'} type={'small'}>
+      {/*<Button*/}
+      {/*  title={'Restore as group'}*/}
+      {/*  type={'small'}*/}
+      {/*  onClick={() => {*/}
+      {/*    const newTabIds = [];*/}
+      {/*    tabs.forEach(async (tab) => {*/}
+      {/*      const t = await chrome.tabs.create({ url: tab.url });*/}
+      {/*      newTabIds.push(t.id);*/}
+      {/*    });*/}
+      {/*    console.log({ newTabIds });*/}
+      {/*    chrome.tabs.group({ tabIds: newTabIds }, (groupId) => {*/}
+      {/*      chrome.tabGroups.update(Number(groupId), { title: 'New group' });*/}
+      {/*    });*/}
+      {/*  }}*/}
+      {/*>*/}
+      {/*  ➡️ group*/}
+      {/*</Button>*/}
+      <Button
+        title={'Restore as tabs'}
+        type={'small'}
+        onClick={() => {
+          tabs.forEach((tab) => {
+            chrome.tabs.create({ url: tab.url });
+          });
+        }}
+      >
         ➡️ tabs
       </Button>
-      <Button title={'Restore as new window'} type={'small'}>
+      <Button
+        title={'Restore as new window'}
+        type={'small'}
+        onClick={async () => {
+          const window = chrome.windows.create({ url: tabs.map((tab) => tab.url) });
+        }}
+      >
         ➡️ window
       </Button>
     </>
