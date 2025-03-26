@@ -1,5 +1,6 @@
 import Button from './Button.jsx';
 import { useEffect, useRef, useState } from 'react';
+import useGetTabGroups from '../hooks/useGetTabGroups.jsx';
 
 const TabIcon = ({ tab, isSaved }) => {
   return (
@@ -21,7 +22,18 @@ const TabIcon = ({ tab, isSaved }) => {
   );
 };
 
-const TabGroup = ({ groupId, isGroup, tabs, isSaved = false, savedTitle = '', dateCreated }) => {
+const TabGroup = ({
+  className,
+  handleClassName,
+  groupId,
+  isGroup,
+  tabs,
+  isSaved = false,
+  savedTitle = '',
+  dateCreated,
+  position,
+  nSavedTabs,
+}) => {
   const [title, setTitle] = useState(savedTitle);
   const scrollRef = useRef(null);
 
@@ -42,7 +54,8 @@ const TabGroup = ({ groupId, isGroup, tabs, isSaved = false, savedTitle = '', da
             url,
             favIconUrl,
           })),
-          dateCreated: new Date().getDate(),
+          dateCreated: new Date(),
+          position: nSavedTabs,
         },
       });
     };
@@ -59,6 +72,8 @@ const TabGroup = ({ groupId, isGroup, tabs, isSaved = false, savedTitle = '', da
           title: title || '-',
           tabs,
           dateCreated,
+          position,
+          isSaved,
         },
       });
     }
@@ -102,37 +117,59 @@ const TabGroup = ({ groupId, isGroup, tabs, isSaved = false, savedTitle = '', da
       ❌
     </Button>
   );
+  const GroupButton = !isSaved && !isGroup && (
+    <Button
+      title="Group tabs"
+      onClick={() => {
+        chrome.tabs.group({ tabIds: tabs.map((tab) => tab.id) }, (groupId) => {
+          chrome.tabGroups.update(Number(groupId), { title: 'New group' });
+        });
+      }}
+      type={'smallIcon'}
+    >
+      🆕
+    </Button>
+  );
 
-  const bgColor = isGroup ? 'bg-blue-100' : isSaved ? 'bg-amber-100' : 'bg-gray-100';
-  const borderColor = isGroup
-    ? 'border-blue-300'
-    : isSaved
-      ? 'border-amber-300'
-      : 'border-gray-300';
+  const bgColor = isGroup ? 'bg-blue-50' : 'bg-transparent';
+  const borderColor = isGroup ? 'border-blue-300' : 'border-gray-300';
 
   return (
-    <div className={`tab-group rounded ${bgColor} border-1 ${borderColor} p-1`}>
-      <div className="mb-1 flex w-full items-center justify-between">
-        <span>
-          {isGroup && <b className="text-xs">G: </b>}
-          <input
-            className="overflow-clip transition-colors [&:not([disabled])]:hover:bg-white"
-            disabled={!(isGroup || isSaved)}
-            type={'text'}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-          />
-        </span>
-        <div className="flex gap-1">
-          {RestoreButtons}
-          {ToggleSaveButton}
-          {CloseButton}
+    <div
+      className={`tab-group rounded ${bgColor} border-1 ${borderColor} p-1 ${className} flex gap-1`}
+    >
+      {isSaved && (
+        <img
+          className={`${handleClassName} scale-180 cursor-grab opacity-50 select-none`}
+          alt=""
+          src="/svgs/grip-vertical.svg"
+        />
+      )}
+      <div className="flex-1">
+        <div className="mb-1 flex w-full items-center justify-between">
+          <span>
+            {isGroup && <b className="text-xs">G: </b>}
+            <input
+              className="overflow-clip transition-colors [&:not([disabled])]:hover:bg-white"
+              disabled={!(isGroup || isSaved)}
+              type={'text'}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+            />{' '}
+            <b>position:</b> {position}
+          </span>
+          <div className="flex gap-1">
+            {RestoreButtons}
+            {ToggleSaveButton}
+            {GroupButton}
+            {CloseButton}
+          </div>
         </div>
-      </div>
-      <div ref={scrollRef} onWheel={handleWheel} className="horizontal-scroll flex gap-1">
-        {tabs.map((tab) => (
-          <TabIcon tab={tab} isSaved={isSaved} />
-        ))}
+        <div ref={scrollRef} onWheel={handleWheel} className="horizontal-scroll flex gap-1">
+          {tabs.map((tab) => (
+            <TabIcon tab={tab} isSaved={isSaved} />
+          ))}
+        </div>
       </div>
     </div>
   );

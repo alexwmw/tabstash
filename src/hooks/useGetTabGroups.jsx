@@ -85,7 +85,7 @@ const useGetTabGroups = () => {
     };
   }, []);
 
-  return { currentTabGroups, savedTabGroups };
+  return { currentTabGroups, savedTabGroups, setSavedTabGroups };
 };
 
 export default useGetTabGroups;

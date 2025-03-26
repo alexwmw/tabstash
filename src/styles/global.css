@@ -2,8 +2,8 @@
 
 @theme {
     --color-primary: #0b0b49;
-    --color-header-text: #ffffff;
-    --color-header-bg: var(--color-primary);
+    /*--color-header-text: #ffffff;*/
+    /*--color-header-bg: var(--color-primary);*/
 }
 :root {
 
