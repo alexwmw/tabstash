@@ -1,14 +1,19 @@
 import Button from './Button.jsx';
 import { useEffect, useRef, useState } from 'react';
-import useGetTabGroups from '../hooks/useGetTabGroups.jsx';
 
 const TabIcon = ({ tab, isSaved }) => {
   return (
     <a href={isSaved && tab.url}>
       <img
         onClick={() => {
-          !isSaved && chrome.tabs.highlight({ tabs: [tab.index], windowId: tab.windowId });
-          isSaved && chrome.tabs.create({ url: tab.url });
+          if (!isSaved) {
+            chrome.windows.update(tab.windowId, {
+              focused: true,
+            });
+            chrome.tabs.highlight({ tabs: [tab.index], windowId: tab.windowId });
+          } else {
+            chrome.tabs.create({ url: tab.url });
+          }
         }}
         className="h-5 w-5 cursor-pointer"
         alt=""
@@ -31,11 +36,10 @@ const TabGroup = ({
   isSaved = false,
   savedTitle = '',
   dateCreated,
-  position,
-  nSavedTabs,
 }) => {
   const [title, setTitle] = useState(savedTitle);
   const scrollRef = useRef(null);
+  const inputRef = useRef();
 
   const handleWheel = (event) => {
     if (scrollRef.current) {
@@ -46,16 +50,18 @@ const TabGroup = ({
 
   const handleSaveBtnClick = () => {
     const saveTabGroup = async () => {
+      const { positions } = await chrome.storage.sync.get('positions');
+      const key = Date.now().toString();
       await chrome.storage.sync.set({
-        [Date.now()]: {
+        positions: [key, ...(positions ?? [])],
+        [key]: {
           title: new Date().toLocaleString(),
           tabs: tabs.map(({ id, url, favIconUrl }) => ({
             id,
             url,
             favIconUrl,
           })),
-          dateCreated: new Date(),
-          position: nSavedTabs,
+          dateCreated: key,
         },
       });
     };
@@ -72,7 +78,6 @@ const TabGroup = ({
           title: title || '-',
           tabs,
           dateCreated,
-          position,
           isSaved,
         },
       });
@@ -86,35 +91,43 @@ const TabGroup = ({
   };
 
   const handleForgetClick = () => {
-    chrome.storage.sync.remove([groupId]);
+    (async () => {
+      const res = await chrome.storage.sync.get(['positions', groupId]);
+      console.log('removing from:', res.positions);
+      await chrome.storage.sync.set({
+        positions: res.positions?.filter((pos) => pos !== groupId) ?? [],
+      });
+      await chrome.storage.sync.remove(groupId);
+    })();
   };
 
   const ToggleSaveButton = !isSaved ? (
-    <Button title="Save" onClick={handleSaveBtnClick} type={'smallIcon'}>
-      💾
+    <Button title="Save" onClick={handleSaveBtnClick} type={'small'}>
+      💾 save
     </Button>
   ) : (
-    <Button title="Forget" onClick={handleForgetClick} type={'smallIcon'}>
-      🗑️
+    <Button title="Forget" onClick={handleForgetClick} type={'small'}>
+      🗑️ delete
     </Button>
   );
 
+  inputRef.current?.focus();
   const RestoreButtons = isSaved && (
     <>
-      <Button title={'Restore as group'} type={'smallIcon'}>
-        🔄
+      <Button title={'Restore as group'} type={'small'}>
+        ➡️ group
       </Button>
-      <Button title={'Restore as tabs'} type={'smallIcon'}>
-        🔄
+      <Button title={'Restore as tabs'} type={'small'}>
+        ➡️ tabs
       </Button>
-      <Button title={'Restore as new window'} type={'smallIcon'}>
-        🔄
+      <Button title={'Restore as new window'} type={'small'}>
+        ➡️ window
       </Button>
     </>
   );
   const CloseButton = !isSaved && (
-    <Button title="Close tabs" onClick={handleCloseBtnClick} type={'smallIcon'}>
-      ❌
+    <Button title="Close tabs" onClick={handleCloseBtnClick} type={'small'}>
+      ❌ close
     </Button>
   );
   const GroupButton = !isSaved && !isGroup && (
@@ -125,13 +138,13 @@ const TabGroup = ({
           chrome.tabGroups.update(Number(groupId), { title: 'New group' });
         });
       }}
-      type={'smallIcon'}
+      type={'tertiary'}
     >
-      🆕
+      🗂️ group
     </Button>
   );
 
-  const bgColor = isGroup ? 'bg-blue-50' : 'bg-transparent';
+  const bgColor = isGroup ? 'bg-blue-50' : 'bg-white';
   const borderColor = isGroup ? 'border-blue-300' : 'border-gray-300';
 
   return (
@@ -150,18 +163,18 @@ const TabGroup = ({
           <span>
             {isGroup && <b className="text-xs">G: </b>}
             <input
+              ref={inputRef}
               className="overflow-clip transition-colors [&:not([disabled])]:hover:bg-white"
               disabled={!(isGroup || isSaved)}
               type={'text'}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-            />{' '}
-            <b>position:</b> {position}
+            />
           </span>
           <div className="flex gap-1">
             {RestoreButtons}
-            {ToggleSaveButton}
             {GroupButton}
+            {ToggleSaveButton}
             {CloseButton}
           </div>
         </div>

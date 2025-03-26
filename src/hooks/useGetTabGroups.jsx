@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 const useGetTabGroups = () => {
   const [currentTabGroups, setCurrentTabGroups] = useState({});
   const [savedTabGroups, setSavedTabGroups] = useState({});
+  const [positions, setPositions] = useState([]);
 
   const getCurrentTabs = async () => {
     const currentTabGroups = {};
@@ -15,8 +16,7 @@ const useGetTabGroups = () => {
       const group = isGroup && (await chrome.tabGroups.get(idToUse));
       const groupTitle = group ? group.title : undefined;
 
-      const title =
-        groupTitle ?? (tab.windowId === currentWindow.id ? 'Current window' : 'Other window');
+      const title = groupTitle ?? 'Ungrouped tabs';
 
       if (currentTabGroups[idToUse]) currentTabGroups[idToUse].tabs.push(tab);
       else currentTabGroups[idToUse] = { title, isGroup, tabs: [tab] };
@@ -34,10 +34,14 @@ const useGetTabGroups = () => {
   useEffect(() => {
     (async () => {
       const data = await chrome.storage.sync.get();
-      const { options, ...groups } = data;
+      const { positions: savedPositions, ...groups } = data;
       setSavedTabGroups(groups ?? {});
+      console.log({ keys: Object.keys(groups) });
+      if (!savedPositions) setPositions(Object.keys(groups));
+      else if (savedPositions && savedPositions.length === 0) setPositions(Object.keys(groups));
+      else setPositions(savedPositions);
     })();
-  }, [setSavedTabGroups]);
+  }, [setSavedTabGroups, setPositions]);
 
   // On current tabs changed
   useEffect(() => {
@@ -65,7 +69,7 @@ const useGetTabGroups = () => {
   useEffect(() => {
     const dataChangeListener = (changes) => {
       const newValues = Object.entries(changes)
-        .filter(([key, { newValue }]) => newValue)
+        .filter(([key, { newValue }]) => newValue && key !== 'positions')
         .map(([key, { newValue }]) => [key, newValue]);
 
       const deletedValues = Object.entries(changes)
@@ -77,6 +81,11 @@ const useGetTabGroups = () => {
         for (const [key, value] of newValues) savedGroups[key] = value;
         return { ...savedGroups };
       });
+
+      if (Object.keys(changes).includes('positions')) {
+        const { newValue } = changes['positions'];
+        if (newValue?.length) setPositions(newValue);
+      }
     };
     chrome.storage.onChanged.addListener(dataChangeListener);
 
@@ -85,7 +94,7 @@ const useGetTabGroups = () => {
     };
   }, []);
 
-  return { currentTabGroups, savedTabGroups, setSavedTabGroups };
+  return { currentTabGroups, savedTabGroups, positions };
 };
 
 export default useGetTabGroups;

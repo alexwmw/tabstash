@@ -1,20 +1,24 @@
 import TabGroup from './TabGroup.jsx';
 import useGetTabGroups from '../hooks/useGetTabGroups.jsx';
 import { ReactSortable } from 'react-sortablejs';
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 const TabGroupList = ({ list, setList = () => {}, isSaved, nSavedTabs }) => {
   const sortableHandleClass = 'tabgroup-handle';
 
-  return (
+  // chrome.storage.sync.clear();
+  return list.length > 0 && list[0][1] ? (
     <ReactSortable
       handle={`.${sortableHandleClass}`}
       tag="ul"
       list={list}
       setList={setList}
       className="flex flex-col gap-1"
+      animation={300}
     >
-      {list.map(([key, { title, tabs, isGroup, dateCreated, position }]) => {
+      {list.map(([key, value]) => {
+        if (!value) return;
+        const { title, tabs, isGroup, dateCreated } = value;
         return (
           <li key={key} className="flex gap-1">
             <TabGroup
@@ -26,45 +30,61 @@ const TabGroupList = ({ list, setList = () => {}, isSaved, nSavedTabs }) => {
               savedTitle={title}
               tabs={tabs ?? []}
               dateCreated={dateCreated}
-              position={position}
               nSavedTabs={nSavedTabs}
             />
           </li>
         );
       })}
     </ReactSortable>
+  ) : (
+    <p>No saved groups</p>
   );
 };
 
 const PrimaryContent = ({}) => {
-  const { savedTabGroups, currentTabGroups } = useGetTabGroups();
+  const { savedTabGroups, currentTabGroups, positions } = useGetTabGroups();
+  const [currentWindowId, setCurrentWindowId] = useState(null);
 
-  const savedTabGroupsList = useMemo(() => {
-    const ordered = [];
-    Object.entries(savedTabGroups).forEach(
-      ([key, value], index) => (ordered[value.position ?? index] = [key, value])
-    );
-    return ordered.filter((v) => v);
-  }, [savedTabGroups]);
+  useEffect(() => {
+    (async () => {
+      const window = await chrome.windows.getCurrent();
+      setCurrentWindowId(window.id);
+    })();
+  }, [setCurrentWindowId]);
 
-  const setSavedTabGroupsList = (sortedTabGroups) => {
-    const storageObject = Object.fromEntries(
-      sortedTabGroups.map(([key, item], index) => {
-        return [key, { ...item, position: index }];
-      })
-    );
-    chrome.storage.sync.set(storageObject);
+  const onSetList = (newEntries) => {
+    const positions = newEntries.map(([k]) => k);
+    if (positions.length) chrome.storage.sync.set({ positions });
   };
 
   return (
     <div className="m-2 min-h-10">
-      <h2 className="mb-1 font-semibold">Open tabs</h2>
+      <h2 className="mb-1 font-semibold">Current window</h2>
       <TabGroupList
-        list={Object.entries(currentTabGroups)}
-        nSavedTabs={Object.entries(savedTabGroupsList).length}
+        list={Object.entries(currentTabGroups).filter(
+          ([key, value]) => value.tabs[0].windowId === currentWindowId
+        )}
       />
-      <h2 className="mt-2 mb-1 font-semibold">Saved tabs</h2>
-      <TabGroupList isSaved={true} list={savedTabGroupsList} setList={setSavedTabGroupsList} />
+      {Object.entries(currentTabGroups).filter(
+        ([key, value]) => value.tabs[0].windowId !== currentWindowId
+      ).length > 0 && (
+        <>
+          <h2 className="mt-2 mb-1 font-semibold">Other windows</h2>
+          <TabGroupList
+            list={Object.entries(currentTabGroups).filter(
+              ([key, value]) => value.tabs[0].windowId !== currentWindowId
+            )}
+          />
+        </>
+      )}
+      <div className="mt-2 border-t border-black">
+        <h2 className="mt-2 mb-1 font-semibold">Saved tabs</h2>
+        <TabGroupList
+          isSaved={true}
+          list={positions?.map((key) => [key, savedTabGroups[key]]) ?? []}
+          setList={onSetList}
+        />
+      </div>
     </div>
   );
 };
