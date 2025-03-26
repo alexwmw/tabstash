@@ -1,5 +1,5 @@
 export const EXTENSION = {
-  name: 'My Extension',
+  name: 'TabCloudGroups',
   description: '',
   logo: '/icons/128.png',
   primaryColor: '#3498db',

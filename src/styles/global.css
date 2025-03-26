@@ -5,7 +5,6 @@
     --color-header-text: #ffffff;
     --color-header-bg: var(--color-primary);
 }
-
 :root {
 
 }
@@ -17,4 +16,17 @@ body {
 img {
     max-width: 100%;
     height: auto;
+}
+
+.horizontal-scroll {
+    overflow-y: hidden;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #9E9E9E transparent;
+    transition: scrollbar-color 0.2s ease;
+    scroll-behavior: smooth;
+}
+
+.horizontal-scroll:hover {
+    scrollbar-color: grey transparent;
 }
