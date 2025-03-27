@@ -1,13 +1,16 @@
 import { createRoot } from 'react-dom/client';
 import PrimaryHeader from '../components/PrimaryHeader.jsx';
 import PrimaryContent from '../components/PrimaryContent.jsx';
+import { TabGroupsProvider } from '../contexts/TabGroupsContext.jsx';
 
 function Popup() {
   return (
-    <div className="flex w-100 flex-col space-y-4">
-      <PrimaryHeader>{/*<OptionsButton />*/}</PrimaryHeader>
-      <PrimaryContent />
-    </div>
+    <TabGroupsProvider>
+      <div className="flex w-100 flex-col space-y-4">
+        <PrimaryHeader>{/*<OptionsButton />*/}</PrimaryHeader>
+        <PrimaryContent />
+      </div>
+    </TabGroupsProvider>
   );
 }
 

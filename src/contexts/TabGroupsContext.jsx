@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
-const useGetTabGroups = () => {
+const TabGroupsContext = createContext();
+
+export const TabGroupsProvider = ({ children }) => {
   const [currentTabGroups, setCurrentTabGroups] = useState({});
   const [savedTabGroups, setSavedTabGroups] = useState({});
   const [positions, setPositions] = useState([]);
@@ -23,12 +25,13 @@ const useGetTabGroups = () => {
     return { ...currentTabGroups };
   };
 
+  // Load current tabs on mount
   useEffect(() => {
     (async () => {
       const tabs = await getCurrentTabGroups();
       setCurrentTabGroups(tabs);
     })();
-  }, [setCurrentTabGroups]);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -42,18 +45,20 @@ const useGetTabGroups = () => {
     })();
   }, [setSavedTabGroups, setPositions]);
 
-  // On current tabs changed
+  // Listen for tab events
   useEffect(() => {
     const tabChangesListener = async () => {
       const tabs = await getCurrentTabGroups();
       setCurrentTabGroups(tabs);
     };
+
     chrome.tabs.onAttached.addListener(tabChangesListener);
     chrome.tabs.onCreated.addListener(tabChangesListener);
     chrome.tabs.onMoved.addListener(tabChangesListener);
     chrome.tabs.onRemoved.addListener(tabChangesListener);
     chrome.tabs.onReplaced.addListener(tabChangesListener);
     chrome.tabs.onUpdated.addListener(tabChangesListener);
+
     return () => {
       chrome.tabs.onAttached.removeListener(tabChangesListener);
       chrome.tabs.onCreated.removeListener(tabChangesListener);
@@ -62,9 +67,9 @@ const useGetTabGroups = () => {
       chrome.tabs.onReplaced.removeListener(tabChangesListener);
       chrome.tabs.onUpdated.removeListener(tabChangesListener);
     };
-  }, [setCurrentTabGroups]);
+  }, []);
 
-  // On storage change
+  // Listen for storage changes
   useEffect(() => {
     const dataChangeListener = (changes) => {
       const newValues = Object.entries(changes)
@@ -93,7 +98,23 @@ const useGetTabGroups = () => {
     };
   }, []);
 
-  return { currentTabGroups, savedTabGroups, positions };
+  return (
+    <TabGroupsContext.Provider
+      value={{
+        currentTabGroups,
+        setCurrentTabGroups,
+        savedTabGroups,
+        setSavedTabGroups,
+        positions,
+        setPositions,
+      }}
+    >
+      {children}
+    </TabGroupsContext.Provider>
+  );
 };
 
-export default useGetTabGroups;
+// Hook to use the context
+export const useTabGroups = () => {
+  return useContext(TabGroupsContext);
+};

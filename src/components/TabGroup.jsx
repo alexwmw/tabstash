@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import TabIcon from './TabIcon.jsx';
 import useTabGroupButtons from './useTabGroupButtons.jsx';
 import ToolTip from './ToolTip.jsx';
 import clsx from 'clsx';
+import TabGroupIconRow from './TabGroupIconRow.jsx';
 
-function getGroupColors(color) {
+function getGroupColorClasses(color) {
   const groupColors = {
     red: ['bg-red-50', 'border-red-300'],
     green: ['bg-green-50', 'border-green-300'],
@@ -32,7 +32,6 @@ const TabGroup = ({
 }) => {
   const [title, setTitle] = useState(savedTitle);
   const [groupColor, setGroupColor] = useState('');
-  const scrollRef = useRef(null);
   const inputRef = useRef();
   const { CloseButton, GroupButton, ToggleSaveButton, RestoreButtons } = useTabGroupButtons({
     tabs,
@@ -40,23 +39,15 @@ const TabGroup = ({
     groupId,
     isGroup,
     isSaved,
-    setColor: (c) => {
-      setGroupColor(getGroupColors(c));
-    },
+    color: groupColor,
+    setColor: setGroupColor,
   });
-
-  const handleWheel = (event) => {
-    if (scrollRef.current) {
-      // event.preventDefault();
-      scrollRef.current.scrollLeft += event.deltaY; // Scroll horizontally
-    }
-  };
 
   useEffect(() => {
     (async () => {
       try {
-        const { color } = await chrome.tabGroups.get(Number(groupId));
-        setGroupColor(getGroupColors(color));
+        const { color } = isGroup ? await chrome.tabGroups.get(Number(groupId)) : {};
+        if (color) setGroupColor(color);
       } catch (e) {
         console.error(e);
       }
@@ -84,7 +75,7 @@ const TabGroup = ({
       className={clsx(
         `tab-group flex gap-1 rounded border-1 p-1`,
         className,
-        isGroup ? groupColor : 'bg-grey-50 border-gray-300'
+        isGroup ? getGroupColorClasses(groupColor) : 'border-gray-300'
       )}
     >
       {isSaved && !isOnly && (
@@ -107,7 +98,6 @@ const TabGroup = ({
             placeholder={'Click to add group title'}
             onChange={(event) => setTitle(event.target.value)}
           />
-
           <div className="flex gap-4">
             <div className="flex gap-2">
               {isGroup && (
@@ -122,11 +112,7 @@ const TabGroup = ({
             </div>
           </div>
         </div>
-        <div ref={scrollRef} onWheel={handleWheel} className="horizontal-scroll flex gap-1">
-          {tabs.map((tab) => (
-            <TabIcon tab={tab} isSaved={isSaved} />
-          ))}
-        </div>
+        <TabGroupIconRow tabs={tabs} groupId={groupId} isSaved={isSaved} isGroup={isGroup} />
       </div>
     </div>
   );

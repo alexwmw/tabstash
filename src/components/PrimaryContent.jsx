@@ -1,9 +1,10 @@
 import useGetTabGroups from '../hooks/useGetTabGroups.jsx';
 import { useEffect, useState } from 'react';
 import TabGroupList from './TabGroupList.jsx';
+import { useTabGroups } from '../contexts/TabGroupsContext.jsx';
 
 const PrimaryContent = ({}) => {
-  const { savedTabGroups, currentTabGroups, positions } = useGetTabGroups();
+  const { savedTabGroups, currentTabGroups, positions } = useTabGroups();
   const [currentWindowId, setCurrentWindowId] = useState(null);
 
   useEffect(() => {

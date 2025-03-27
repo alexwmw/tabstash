@@ -2,7 +2,7 @@ import ToolTip from './ToolTip.jsx';
 
 const TabIcon = ({ tab, isSaved }) => {
   return (
-    <ToolTip text={tab.url}>
+    <ToolTip className="flex-shrink-0" id={tab.id} text={tab.url}>
       <a className="contents" href={isSaved && tab.url}>
         <img
           onClick={() => {
@@ -15,7 +15,7 @@ const TabIcon = ({ tab, isSaved }) => {
               chrome.tabs.create({ url: tab.url });
             }
           }}
-          className="h-5 w-5 cursor-pointer"
+          className="h-5 w-5 cursor-pointer hover:drop-shadow-sm"
           alt=""
           src={
             tab.favIconUrl ||

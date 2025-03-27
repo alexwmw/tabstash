@@ -8,7 +8,7 @@ import {
   FaWindowRestore,
 } from 'react-icons/fa6';
 
-const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor }) => {
+const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, color }) => {
   const handleSaveBtnClick = () => {
     const saveTabGroup = async () => {
       const { positions } = await chrome.storage.sync.get('positions');
@@ -23,6 +23,7 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor }
             favIconUrl,
           })),
           dateCreated: key,
+          color,
         },
       });
     };
