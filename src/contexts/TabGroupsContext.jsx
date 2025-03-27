@@ -58,6 +58,7 @@ export const TabGroupsProvider = ({ children }) => {
     chrome.tabs.onRemoved.addListener(tabChangesListener);
     chrome.tabs.onReplaced.addListener(tabChangesListener);
     chrome.tabs.onUpdated.addListener(tabChangesListener);
+    chrome.tabGroups.onUpdated.addListener(tabChangesListener);
 
     return () => {
       chrome.tabs.onAttached.removeListener(tabChangesListener);
@@ -66,6 +67,7 @@ export const TabGroupsProvider = ({ children }) => {
       chrome.tabs.onRemoved.removeListener(tabChangesListener);
       chrome.tabs.onReplaced.removeListener(tabChangesListener);
       chrome.tabs.onUpdated.removeListener(tabChangesListener);
+      chrome.tabGroups.onUpdated.removeListener(tabChangesListener);
     };
   }, []);
 

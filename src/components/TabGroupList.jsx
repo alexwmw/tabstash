@@ -18,7 +18,7 @@ const TabGroupList = ({ list, setList = () => {}, isSaved, nSavedTabs }) => {
     >
       {list.map(([key, value]) => {
         if (!value) return;
-        const { title, tabs, isGroup, dateCreated } = value;
+        const { title, tabs, isGroup, dateCreated, color } = value;
         return (
           <li key={key} className="flex gap-1">
             <TabGroup
@@ -32,6 +32,7 @@ const TabGroupList = ({ list, setList = () => {}, isSaved, nSavedTabs }) => {
               dateCreated={dateCreated}
               nSavedTabs={nSavedTabs}
               isOnly={list.length === 1}
+              savedColor={color}
             />
           </li>
         );

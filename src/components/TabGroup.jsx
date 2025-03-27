@@ -19,6 +19,23 @@ function getGroupColorClasses(color) {
   return groupColors[color];
 }
 
+function getTagColorClasses(color) {
+  const tagColors = {
+    grey: ['text-gray-600', 'bg-gray-300'],
+    blue: ['text-blue-800', 'bg-blue-200'],
+    red: ['text-red-800', 'bg-red-200'],
+    yellow: ['text-yellow-800', 'bg-yellow-200'],
+    green: ['text-green-800', 'bg-green-200'],
+    pink: ['text-pink-800', 'bg-pink-200'],
+    purple: ['text-purple-800', 'bg-purple-200'],
+    cyan: ['text-cyan-800', 'bg-cyan-200'],
+    orange: ['text-orange-800', 'bg-orange-200'],
+  };
+  return tagColors[color];
+}
+
+const COLORS = ['red', 'green', 'blue', 'grey', 'yellow', 'pink', 'purple', 'cyan', 'orange'];
+
 const TabGroup = ({
   className,
   handleClassName,
@@ -27,11 +44,12 @@ const TabGroup = ({
   tabs = [],
   isSaved = false,
   savedTitle = '',
+  savedColor = '',
   dateCreated,
   isOnly = false,
 }) => {
   const [title, setTitle] = useState(savedTitle);
-  const [groupColor, setGroupColor] = useState('');
+  const [groupColor, setGroupColor] = useState(savedColor);
   const inputRef = useRef();
   const { CloseButton, GroupButton, ToggleSaveButton, RestoreButtons } = useTabGroupButtons({
     tabs,
@@ -65,10 +83,30 @@ const TabGroup = ({
           tabs,
           dateCreated,
           isSaved,
+          color: groupColor,
         },
       });
     }
   }, [title]);
+
+  const cycleColors = async () => {
+    if (!isGroup) return;
+    const colorIndex = COLORS.indexOf(groupColor);
+    const nextIndex = colorIndex < COLORS.length - 1 ? colorIndex + 1 : 0;
+    const nextItem = COLORS[nextIndex];
+    await chrome.tabGroups.update(Number(groupId), { color: nextItem });
+  };
+
+  useEffect(() => {
+    const listener = (group) => {
+      if (group.id === Number(groupId)) {
+        setGroupColor(group.color);
+      }
+    };
+
+    chrome.tabGroups.onUpdated.addListener(listener);
+    return () => chrome.tabGroups.onUpdated.removeListener(listener);
+  }, []);
 
   return (
     <div
@@ -101,7 +139,17 @@ const TabGroup = ({
           <div className="flex gap-4">
             <div className="flex gap-2">
               {isGroup && (
-                <b className="rounded bg-gray-300 p-0 pr-1 pl-1 text-[10px] text-gray-600">group</b>
+                <ToolTip text={'Change group color'}>
+                  <button
+                    onClick={cycleColors}
+                    className={clsx(
+                      'font-semi-bold cursor-pointer rounded p-0.5 pr-1 pl-1 text-[10px]',
+                      getTagColorClasses(groupColor)
+                    )}
+                  >
+                    {groupColor} group
+                  </button>
+                </ToolTip>
               )}
               {GroupButton}
             </div>
