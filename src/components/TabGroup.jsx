@@ -1,31 +1,7 @@
 import Button from './Button.jsx';
 import { useEffect, useRef, useState } from 'react';
-
-const TabIcon = ({ tab, isSaved }) => {
-  return (
-    <a className="contents" href={isSaved && tab.url}>
-      <img
-        onClick={() => {
-          if (!isSaved) {
-            chrome.windows.update(tab.windowId, {
-              focused: true,
-            });
-            chrome.tabs.highlight({ tabs: [tab.index], windowId: tab.windowId });
-          } else {
-            chrome.tabs.create({ url: tab.url });
-          }
-        }}
-        className="h-5 w-5 cursor-pointer"
-        alt=""
-        title={tab.title}
-        src={
-          tab.favIconUrl ||
-          (tab.url.startsWith('chrome') ? 'icons/chrome-favicon.png' : 'icons/generic-favicon.png')
-        }
-      />
-    </a>
-  );
-};
+import TabIcon from './TabIcon.jsx';
+import useTabGroupButtons from './useTabGroupButtons.jsx';
 
 const TabGroup = ({
   className,
@@ -40,32 +16,19 @@ const TabGroup = ({
   const [title, setTitle] = useState(savedTitle);
   const scrollRef = useRef(null);
   const inputRef = useRef();
+  const { CloseButton, GroupButton, ToggleSaveButton, RestoreButtons } = useTabGroupButtons(
+    tabs,
+    title,
+    groupId,
+    isGroup,
+    isSaved
+  );
 
   const handleWheel = (event) => {
     if (scrollRef.current) {
       // event.preventDefault();
       scrollRef.current.scrollLeft += event.deltaY; // Scroll horizontally
     }
-  };
-
-  const handleSaveBtnClick = () => {
-    const saveTabGroup = async () => {
-      const { positions } = await chrome.storage.sync.get('positions');
-      const key = Date.now().toString();
-      await chrome.storage.sync.set({
-        positions: [key, ...(positions ?? [])],
-        [key]: {
-          title: new Date().toLocaleString(),
-          tabs: tabs.map(({ id, url, favIconUrl }) => ({
-            id,
-            url,
-            favIconUrl,
-          })),
-          dateCreated: key,
-        },
-      });
-    };
-    saveTabGroup();
   };
 
   useEffect(() => {
@@ -84,96 +47,12 @@ const TabGroup = ({
     }
   }, [title]);
 
-  const handleCloseBtnClick = () => {
-    tabs.forEach((tab) => {
-      chrome.tabs.remove(tab.id);
-    });
-  };
-
-  const handleForgetClick = () => {
-    (async () => {
-      const res = await chrome.storage.sync.get(['positions', groupId]);
-      console.log('removing from:', res.positions);
-      await chrome.storage.sync.set({
-        positions: res.positions?.filter((pos) => pos !== groupId) ?? [],
-      });
-      await chrome.storage.sync.remove(groupId);
-    })();
-  };
-
-  const ToggleSaveButton = !isSaved ? (
-    <Button title="Save" onClick={handleSaveBtnClick} type={'small'}>
-      💾 save
-    </Button>
-  ) : (
-    <Button title="Forget" onClick={handleForgetClick} type={'small'}>
-      🗑️ delete
-    </Button>
-  );
-
-  inputRef.current?.focus();
-  const RestoreButtons = isSaved && (
-    <>
-      {/*<Button*/}
-      {/*  title={'Restore as group'}*/}
-      {/*  type={'small'}*/}
-      {/*  onClick={() => {*/}
-      {/*    const newTabIds = [];*/}
-      {/*    tabs.forEach(async (tab) => {*/}
-      {/*      const t = await chrome.tabs.create({ url: tab.url });*/}
-      {/*      newTabIds.push(t.id);*/}
-      {/*    });*/}
-      {/*    console.log({ newTabIds });*/}
-      {/*    chrome.tabs.group({ tabIds: newTabIds }, (groupId) => {*/}
-      {/*      chrome.tabGroups.update(Number(groupId), { title: 'New group' });*/}
-      {/*    });*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  ➡️ group*/}
-      {/*</Button>*/}
-      <Button
-        title={'Restore as tabs'}
-        type={'small'}
-        onClick={() => {
-          tabs.forEach((tab) => {
-            chrome.tabs.create({ url: tab.url });
-          });
-        }}
-      >
-        ➡️ tabs
-      </Button>
-      <Button
-        title={'Restore as new window'}
-        type={'small'}
-        onClick={async () => {
-          const window = chrome.windows.create({ url: tabs.map((tab) => tab.url) });
-        }}
-      >
-        ➡️ window
-      </Button>
-    </>
-  );
-  const CloseButton = !isSaved && (
-    <Button title="Close tabs" onClick={handleCloseBtnClick} type={'small'}>
-      ❌ close
-    </Button>
-  );
-  const GroupButton = !isSaved && !isGroup && (
-    <Button
-      title="Group tabs"
-      onClick={() => {
-        chrome.tabs.group({ tabIds: tabs.map((tab) => tab.id) }, (groupId) => {
-          chrome.tabGroups.update(Number(groupId), { title: 'New group' });
-        });
-      }}
-      type={'tertiary'}
-    >
-      🗂️ group
-    </Button>
-  );
-
-  const bgColor = isGroup ? 'bg-blue-50' : 'bg-white';
-  const borderColor = isGroup ? 'border-blue-300' : 'border-gray-300';
+  const bgColor = isGroup ? 'bg-blue-50' : isSaved ? 'bg-amber-50' : 'bg-grey-50';
+  const borderColor = isGroup
+    ? 'border-blue-300'
+    : isSaved
+      ? 'border-amber-300'
+      : 'border-gray-300';
 
   return (
     <div
@@ -189,7 +68,7 @@ const TabGroup = ({
       <div className="flex-1">
         <div className="mb-1 flex w-full items-center justify-between">
           <span>
-            {isGroup && <b className="text-xs">G: </b>}
+            {isGroup && <b className="text-[10px]">Group: </b>}
             <input
               ref={inputRef}
               className="overflow-clip transition-colors [&:not([disabled])]:hover:bg-white"
@@ -199,7 +78,7 @@ const TabGroup = ({
               onChange={(event) => setTitle(event.target.value)}
             />
           </span>
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             {RestoreButtons}
             {GroupButton}
             {ToggleSaveButton}

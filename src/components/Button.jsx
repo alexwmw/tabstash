@@ -7,7 +7,11 @@ const Button = ({ onClick, type = 'tertiary', children, className, ...props }) =
   }[type];
 
   return (
-    <button onClick={onClick} className={`cursor-pointer ${typeClasses} ${className}`} {...props}>
+    <button
+      onClick={onClick}
+      className={`cursor-pointer ${typeClasses} ${className ?? ''}`}
+      {...props}
+    >
       {children}
     </button>
   );

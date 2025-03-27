@@ -6,9 +6,6 @@
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
-  "background": {
-    "service_worker": "background.js"
-  },
   "permissions": [
     "storage",
     "tabs",
@@ -17,7 +14,6 @@
   ],
   "action": {
     "default_popup": "index.html",
-    "default_icon": "icons/icon.png"
-  },
-  "options_page": "options.html"
+    "default_icon": "icons/main.png"
+  }
 }
