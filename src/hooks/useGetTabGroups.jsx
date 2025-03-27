@@ -5,10 +5,9 @@ const useGetTabGroups = () => {
   const [savedTabGroups, setSavedTabGroups] = useState({});
   const [positions, setPositions] = useState([]);
 
-  const getCurrentTabs = async () => {
+  const getCurrentTabGroups = async () => {
     const currentTabGroups = {};
     const currentTabs = await chrome.tabs.query({});
-    const currentWindow = await chrome.windows.getCurrent();
     for (const tab of currentTabs.filter((tab) => tab.url !== 'chrome://newtab/')) {
       const isGroup = tab.groupId > -1;
       const idToUse = isGroup ? tab.groupId : tab.windowId;
@@ -16,7 +15,7 @@ const useGetTabGroups = () => {
       const group = isGroup && (await chrome.tabGroups.get(idToUse));
       const groupTitle = group ? group.title : undefined;
 
-      const title = groupTitle ?? 'Ungrouped tabs';
+      const title = groupTitle ?? 'Tabs';
 
       if (currentTabGroups[idToUse]) currentTabGroups[idToUse].tabs.push(tab);
       else currentTabGroups[idToUse] = { title, isGroup, tabs: [tab] };
@@ -26,7 +25,7 @@ const useGetTabGroups = () => {
 
   useEffect(() => {
     (async () => {
-      const tabs = await getCurrentTabs();
+      const tabs = await getCurrentTabGroups();
       setCurrentTabGroups(tabs);
     })();
   }, [setCurrentTabGroups]);
@@ -46,7 +45,7 @@ const useGetTabGroups = () => {
   // On current tabs changed
   useEffect(() => {
     const tabChangesListener = async () => {
-      const tabs = await getCurrentTabs();
+      const tabs = await getCurrentTabGroups();
       setCurrentTabGroups(tabs);
     };
     chrome.tabs.onAttached.addListener(tabChangesListener);

@@ -1,6 +1,14 @@
 import Button from './Button.jsx';
+import { FaSave, FaTimes } from 'react-icons/fa';
+import {
+  FaArrowUpFromBracket,
+  FaFolderMinus,
+  FaFolderPlus,
+  FaTrash,
+  FaWindowRestore,
+} from 'react-icons/fa6';
 
-const useTabGroupButtons = (tabs, title, groupId, isGroup, isSaved) => {
+const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor }) => {
   const handleSaveBtnClick = () => {
     const saveTabGroup = async () => {
       const { positions } = await chrome.storage.sync.get('positions');
@@ -8,7 +16,7 @@ const useTabGroupButtons = (tabs, title, groupId, isGroup, isSaved) => {
       await chrome.storage.sync.set({
         positions: [key, ...(positions ?? [])],
         [key]: {
-          title: isGroup ? title : new Date().toLocaleString(),
+          title: isGroup && title ? title : new Date().toLocaleString(),
           tabs: tabs.map(({ id, url, favIconUrl }) => ({
             id,
             url,
@@ -40,7 +48,11 @@ const useTabGroupButtons = (tabs, title, groupId, isGroup, isSaved) => {
 
   const handleGroupClick = () => {
     chrome.tabs.group({ tabIds: tabs.map((tab) => tab.id) }, (groupId) => {
-      chrome.tabGroups.update(Number(groupId), { title: 'New group' });
+      chrome.tabGroups.get(Number(groupId), ({ color }) => {
+        console.log(color);
+        setColor(color);
+      });
+      chrome.tabGroups.update(Number(groupId), { title: '' });
     });
   };
   const handleUngroupClick = () => {
@@ -63,12 +75,12 @@ const useTabGroupButtons = (tabs, title, groupId, isGroup, isSaved) => {
   const handleRestoreGroup = () => {};
 
   const ToggleSaveButton = !isSaved ? (
-    <Button title="Save" onClick={handleSaveBtnClick} type={'small'}>
-      💾 save
+    <Button title="Save these tabs" onClick={handleSaveBtnClick} type={'smallIcon'}>
+      <FaSave />
     </Button>
   ) : (
-    <Button title="Delete saved group" onClick={handleForgetClick} type={'small'}>
-      🗑️ delete
+    <Button title="Delete saved group" onClick={handleForgetClick} type={'smallIcon'}>
+      <FaTrash />
     </Button>
   );
 
@@ -76,7 +88,7 @@ const useTabGroupButtons = (tabs, title, groupId, isGroup, isSaved) => {
     <>
       {/*<Button*/}
       {/*  title={'Restore as group'}*/}
-      {/*  type={'small'}*/}
+      {/*  type={'smallIcon'}*/}
       {/*  onClick={() => {*/}
       {/*    const newTabIds = [];*/}
       {/*    tabs.forEach(async (tab) => {*/}
@@ -91,31 +103,31 @@ const useTabGroupButtons = (tabs, title, groupId, isGroup, isSaved) => {
       {/*>*/}
       {/*  ➡️ group*/}
       {/*</Button>*/}
-      <Button title={'Restore as tabs'} type={'small'} onClick={handleRestoreTabs}>
-        ➡️ tabs
+      <Button title={'Open tabs in this window'} type={'smallIcon'} onClick={handleRestoreTabs}>
+        <FaArrowUpFromBracket />
       </Button>
-      <Button title={'Restore as new window'} type={'small'} onClick={handleRestoreWindow}>
-        ➡️ window
+      <Button title={'Open tabs as a new window'} type={'smallIcon'} onClick={handleRestoreWindow}>
+        <FaWindowRestore />
       </Button>
     </>
   );
   const CloseButton = !isSaved && (
-    <Button title="Close tabs" onClick={handleCloseBtnClick} type={'small'}>
-      ❌ close
+    <Button title="Close these tabs" onClick={handleCloseBtnClick} type={'smallIcon'}>
+      <FaTimes />
     </Button>
   );
-  const GroupButton =
-    !isSaved &&
-    (!isGroup ? (
-      <Button title="Group tabs" onClick={handleGroupClick} type={'small'}>
-        🗂️ group
-      </Button>
-    ) : (
-      <Button title="Ungroup tabs" onClick={handleUngroupClick} type={'small'}>
-        🗂️ ungroup
-      </Button>
-    ));
-  return { CloseButton, ToggleSaveButton, RestoreButtons, GroupButton };
+  const GroupButton = !isSaved && !isGroup && (
+    <Button title="Group these tabs" onClick={handleGroupClick} type={'smallIcon'}>
+      <FaFolderPlus />
+    </Button>
+  );
+
+  const UngroupButton = !isSaved && isGroup && (
+    <Button title="Ungroup tabs" onClick={handleUngroupClick} type={'smallIcon'}>
+      <FaFolderMinus />
+    </Button>
+  );
+  return { CloseButton, ToggleSaveButton, RestoreButtons, GroupButton, UngroupButton };
 };
 
 export default useTabGroupButtons;
