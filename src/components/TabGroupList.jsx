@@ -4,7 +4,7 @@ import TabGroup from './TabGroup.jsx';
 const TabGroupList = ({ list, setList = () => {}, isSaved, nSavedTabs }) => {
   const sortableHandleClass = 'tabgroup-handle';
 
-  const NO_GROUPS_MESSAGE = isSaved ? 'No saved groups' : 'No tabs found';
+  const NO_GROUPS_MESSAGE = isSaved ? 'Stash is empty' : 'No tabs found';
 
   // chrome.storage.sync.clear();
   return list.length > 0 && list[0][1] ? (

@@ -1,7 +1,7 @@
-import { ReactSortable } from 'react-sortablejs';
-import TabIcon from './TabIcon.jsx';
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
+import { ReactSortable } from 'react-sortablejs';
+import TabIcon from './TabIcon.jsx';
 
 const TabGroupIconRow = ({ groupId, isSaved, isGroup, tabs }) => {
   const scrollRef = useRef(null);

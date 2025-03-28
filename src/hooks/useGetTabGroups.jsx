@@ -33,7 +33,7 @@ const useGetTabGroups = () => {
   useEffect(() => {
     (async () => {
       const data = await chrome.storage.sync.get();
-      const { positions: savedPositions, ...groups } = data;
+      const { options, positions: savedPositions, ...groups } = data;
       setSavedTabGroups(groups ?? {});
       console.log({ keys: Object.keys(groups) });
       if (!savedPositions) setPositions(Object.keys(groups));

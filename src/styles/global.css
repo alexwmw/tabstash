@@ -29,3 +29,24 @@ img {
 .horizontal-scroll:hover {
     scrollbar-color: grey transparent;
 }
+
+.stacked-grid {
+    display: grid;
+    grid-template-areas: 'stack';
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    top: -2.5px;
+
+    > * {
+        grid-area: stack;
+
+        &:first-child {
+            z-index: 1;
+        }
+
+        &:nth-child(2) {
+            z-index: 2;
+        }
+    }
+}

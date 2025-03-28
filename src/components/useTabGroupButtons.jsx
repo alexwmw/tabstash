@@ -1,5 +1,5 @@
 import Button from './Button.jsx';
-import { FaSave, FaTimes } from 'react-icons/fa';
+import { FaArrowCircleDown, FaTimes } from 'react-icons/fa';
 import {
   FaArrowUpFromBracket,
   FaFolderMinus,
@@ -18,7 +18,7 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
         [key]: {
           title: isGroup && title ? title : new Date().toLocaleString(),
           tabs: tabs.map(({ id, url, favIconUrl }) => ({
-            id,
+            id: Number(id) + Number(key),
             url,
             favIconUrl,
           })),
@@ -76,8 +76,13 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
   const handleRestoreGroup = () => {};
 
   const ToggleSaveButton = !isSaved ? (
-    <Button title="Save these tabs" onClick={handleSaveBtnClick} type={'smallIcon'}>
-      <FaSave />
+    <Button title="Stash these tabs" onClick={handleSaveBtnClick} type={'smallIcon'}>
+      <div className="stacked-grid h-3 w-3 rounded-[2.5px] bg-gray-800">
+        <div className="flex items-center justify-center">
+          <div className="h-2 w-2 bg-white"></div>
+        </div>
+        <FaArrowCircleDown className="text-[12px]" />
+      </div>
     </Button>
   ) : (
     <Button title="Delete saved group" onClick={handleForgetClick} type={'smallIcon'}>

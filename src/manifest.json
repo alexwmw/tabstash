@@ -12,6 +12,9 @@
     "tabGroups",
     "unlimitedStorage"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "index.html",
     "default_icon": "icons/main.png"

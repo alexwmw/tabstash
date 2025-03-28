@@ -40,7 +40,7 @@ const PrimaryContent = ({}) => {
         </>
       )}
       <div className="mt-2 border-t border-black">
-        <h2 className="mt-2 mb-1 font-semibold">Saved tabs</h2>
+        <h2 className="mt-2 mb-1 font-semibold">Stashed tabs</h2>
         <TabGroupList
           isSaved={true}
           list={positions?.map((key) => [key, savedTabGroups[key]]) ?? []}
