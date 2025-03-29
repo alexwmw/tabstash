@@ -24,7 +24,6 @@ chrome.runtime.onInstalled.addListener(setDefaultOptions);
 chrome.runtime.onMessage.addListener(messageListener);
 
 function messageListener(request, sender, sendResponse) {
-  console.log(request);
   /** DO STUFF WITH TABS */
   if (request.action === 'OPEN_AS_TABS') {
     openAsTabs(request).then(() => {

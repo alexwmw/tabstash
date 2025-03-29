@@ -10,8 +10,8 @@ const PrimaryHeader = ({ children, className }) => {
       )}
     >
       <div className="flex items-center gap-1">
-        <img src={EXTENSION.logo} alt="Logo" className="h-7 w-7" />
-        <h1 className="text-xl font-semibold">{EXTENSION.name}</h1>
+        <img src={EXTENSION.logo} alt="Logo" className="h-6 w-6" />
+        <h1 className="text-lg font-semibold">{EXTENSION.name}</h1>
       </div>
       <div>{children}</div>
     </header>

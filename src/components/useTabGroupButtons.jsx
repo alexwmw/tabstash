@@ -55,10 +55,20 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
 
   const RestoreButtons = isSaved && (
     <>
-      <Button title={'Open tabs in this window'} type={'smallIcon'} onClick={handleRestoreTabs}>
+      <Button
+        disabled={!tabs || tabs.length === 0}
+        title={'Open tabs in this window'}
+        type={'smallIcon'}
+        onClick={handleRestoreTabs}
+      >
         <FaArrowUpFromBracket />
       </Button>
-      <Button title={'Open tabs as a new window'} type={'smallIcon'} onClick={handleRestoreWindow}>
+      <Button
+        disabled={!tabs || tabs.length === 0}
+        title={'Open tabs as a new window'}
+        type={'smallIcon'}
+        onClick={handleRestoreWindow}
+      >
         <FaWindowRestore />
       </Button>
     </>

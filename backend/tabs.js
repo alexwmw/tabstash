@@ -23,16 +23,22 @@ export const openAsWindow = async ({ tabs = [], color, title }) => {
 };
 
 export const groupTabs = async ({ tabs = [] }, sendResponse) => {
-  chrome.tabs.group({ tabIds: tabs.map((tab) => tab.id) }, (groupId) => {
-    chrome.tabGroups.get(Number(groupId));
-    chrome.tabGroups.update(
-      Number(groupId),
-      { title: '', color: DEFAULT_GROUP_COLOR },
-      ({ color }) => {
-        sendResponse(color);
-      }
-    );
-  });
+  chrome.tabs.group(
+    {
+      tabIds: tabs.map((tab) => tab.id),
+      createProperties: { windowId: tabs[0].windowId },
+    },
+    (groupId) => {
+      chrome.tabGroups.get(Number(groupId));
+      chrome.tabGroups.update(
+        Number(groupId),
+        { title: '', color: DEFAULT_GROUP_COLOR },
+        ({ color }) => {
+          sendResponse(color);
+        }
+      );
+    }
+  );
 };
 
 export const ungroupTabs = async ({ tabs = [] }) => {

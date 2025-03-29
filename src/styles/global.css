@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-@theme {
-    --color-primary: #0b0b49;
-    /*--color-header-text: #ffffff;*/
-    /*--color-header-bg: var(--color-primary);*/
-}
 :root {
 
 }
@@ -35,8 +30,6 @@ img {
     grid-template-areas: 'stack';
     justify-content: center;
     align-items: center;
-    position: relative;
-    top: -2.5px;
     isolation: isolate;
 
     > * {

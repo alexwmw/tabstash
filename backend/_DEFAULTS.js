@@ -22,11 +22,11 @@ export const DEFAULT_GROUP_COLOR = 'blue';
 export const MAX_FAVICON_URL_LENGTH = 200;
 
 export const COLORS = [
-  'red',
-  'green',
-  'blue',
   'grey',
+  'blue',
+  'red',
   'yellow',
+  'green',
   'pink',
   'purple',
   'cyan',

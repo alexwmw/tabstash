@@ -4,7 +4,7 @@ const ToolTip = ({ id, className, text, children }) => {
   return (
     <Tooltip.Provider delayDuration={200}>
       <Tooltip.Root>
-        <Tooltip.Trigger className={className} id={id}>
+        <Tooltip.Trigger asChild className={className} id={id}>
           {children}
         </Tooltip.Trigger>
         <Tooltip.Content
