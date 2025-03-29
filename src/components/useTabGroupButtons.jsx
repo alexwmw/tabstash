@@ -9,60 +9,25 @@ import {
 } from 'react-icons/fa6';
 
 const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, color }) => {
-  const handleSaveBtnClick = () => {
-    const saveTabGroup = async () => {
-      const { positions } = await chrome.storage.sync.get('positions');
-      const key = Date.now().toString();
-      try {
-        await chrome.storage.sync.set({
-          positions: [key, ...(positions ?? [])],
-          [key]: {
-            title: isGroup && title ? title : new Date().toLocaleString(),
-            tabs: tabs.map(({ id, url, favIconUrl }) => ({
-              id: Number(id) + Number(key),
-              url,
-              favIconUrl: favIconUrl.length < 200 ? favIconUrl : null,
-            })),
-            dateCreated: key,
-            color,
-          },
-        });
-      } catch (e) {
-        console.error(e);
-        alert(`Woops! That\s a few too many tabs. Try saving them in smaller groups.`);
-      }
-    };
-    saveTabGroup();
+  const handleSaveBtnClick = async () => {
+    await chrome.runtime.sendMessage({ action: 'SAVE_NEW_GROUP', isGroup, title, tabs, color });
   };
 
-  const handleCloseBtnClick = () => {
-    tabs.forEach((tab) => {
-      chrome.tabs.remove(tab.id);
-    });
+  const handleCloseBtnClick = async () => {
+    await chrome.runtime.sendMessage({ action: 'REMOVE_TABS', tabs });
   };
 
-  const handleForgetClick = () => {
-    (async () => {
-      const res = await chrome.storage.sync.get(['positions', groupId]);
-      console.log('removing from:', res.positions);
-      await chrome.storage.sync.set({
-        positions: res.positions?.filter((pos) => pos !== groupId) ?? [],
-      });
-      await chrome.storage.sync.remove(groupId);
-    })();
+  const handleForgetClick = async () => {
+    await chrome.runtime.sendMessage({ action: 'REMOVE_TAB_GROUP', groupId });
   };
 
-  const handleGroupClick = () => {
-    chrome.tabs.group({ tabIds: tabs.map((tab) => tab.id) }, (groupId) => {
-      chrome.tabGroups.get(Number(groupId), ({ color }) => {
-        console.log(color);
-        setColor(color);
-      });
-      chrome.tabGroups.update(Number(groupId), { title: '' });
-    });
+  const handleGroupClick = async () => {
+    const groupColor = await chrome.runtime.sendMessage({ action: 'GROUP_TABS', tabs });
+    setColor(groupColor);
   };
-  const handleUngroupClick = () => {
-    chrome.runtime.sendMessage({ action: 'UNGROUP_TABS', tabs });
+
+  const handleUngroupClick = async () => {
+    await chrome.runtime.sendMessage({ action: 'UNGROUP_TABS', tabs });
   };
 
   const handleRestoreWindow = async () => {

@@ -2,7 +2,7 @@ import ToolTip from './ToolTip.jsx';
 
 const TabIcon = ({ tab, isSaved }) => {
   return (
-    <ToolTip className="flex-shrink-0" id={tab.id} text={tab.url}>
+    <ToolTip className="flex-shrink-0" id={tab.id} text={tab.title ?? tab.url}>
       <a className="contents" href={isSaved && tab.url}>
         <img
           onClick={() => {

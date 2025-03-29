@@ -4,6 +4,7 @@ import ToolTip from './ToolTip.jsx';
 import clsx from 'clsx';
 import TabGroupIconRow from './TabGroupIconRow.jsx';
 import useTabGroupState from './useTabGroupState.jsx';
+import { getGroupColorClasses, getTagColorClasses } from '../utils.js';
 
 const TabGroup = (props) => {
   const {
@@ -16,16 +17,8 @@ const TabGroup = (props) => {
     isOnly = false,
   } = props;
 
-  const {
-    title,
-    setTitle,
-    groupColor,
-    setGroupColor,
-    colorGroupName,
-    cycleColors,
-    getGroupColorClasses,
-    getTagColorClasses,
-  } = useTabGroupState(props);
+  const { title, setTitle, groupColor, setGroupColor, colorGroupName, cycleColors } =
+    useTabGroupState(props);
 
   const inputRef = useRef();
   const { CloseButton, GroupButton, UngroupButton, ToggleSaveButton, RestoreButtons } =

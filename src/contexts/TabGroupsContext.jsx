@@ -7,69 +7,53 @@ export const TabGroupsProvider = ({ children }) => {
   const [savedTabGroups, setSavedTabGroups] = useState({});
   const [positions, setPositions] = useState([]);
   const [options, setOptions] = useState({});
+  const [colors, setColors] = useState([]);
 
-  const getCurrentTabGroups = async () => {
-    const currentTabGroups = {};
-    const currentTabs = await chrome.tabs.query({});
-    for (const tab of currentTabs.filter((tab) => !tab.url?.startsWith('chrome'))) {
-      const isGroup = tab.groupId > -1;
-      const idToUse = isGroup ? tab.groupId : tab.windowId;
-
-      const group = isGroup && (await chrome.tabGroups.get(Number(idToUse)));
-      const groupTitle = group ? group.title : undefined;
-
-      const title = groupTitle ?? 'Tabs';
-
-      if (currentTabGroups[idToUse]) currentTabGroups[idToUse].tabs.push(tab);
-      else currentTabGroups[idToUse] = { title, isGroup, tabs: [tab] };
-    }
-    return { ...currentTabGroups };
-  };
-
-  // Load current tabs on mount
   useEffect(() => {
     (async () => {
-      const tabs = await getCurrentTabGroups();
-      setCurrentTabGroups(tabs);
+      const currentTabGroups = await chrome.runtime.sendMessage({
+        action: 'GET_CURRENT_TAB_GROUPS',
+      });
+      setCurrentTabGroups(currentTabGroups ?? {});
+
+      const savedTabGroups = await chrome.runtime.sendMessage({ action: 'GET_SAVED_TAB_GROUPS' });
+      setSavedTabGroups(savedTabGroups ?? {});
+
+      const savedOptions = await chrome.runtime.sendMessage({ action: 'GET_OPTIONS' });
+      setOptions(savedOptions ?? {});
+
+      const savedPositions = await chrome.runtime.sendMessage({ action: 'GET_POSITIONS' });
+      setPositions(
+        !savedPositions || savedPositions.length === 0
+          ? setPositions(Object.keys(savedTabGroups))
+          : savedPositions
+      );
+
+      const COLORS = await chrome.runtime.sendMessage({ action: 'GET_COLORS' });
+      setColors(COLORS ?? []);
     })();
   }, []);
-
-  useEffect(() => {
-    (async () => {
-      const data = await chrome.storage.sync.get();
-      const { options, positions: savedPositions, ...groups } = data;
-      setSavedTabGroups(groups ?? {});
-      setOptions(options ?? {});
-      if (!savedPositions) setPositions(Object.keys(groups));
-      else if (savedPositions && savedPositions.length === 0) setPositions(Object.keys(groups));
-      else setPositions(savedPositions);
-    })();
-  }, [setSavedTabGroups, setPositions, setOptions]);
 
   // Listen for tab events
   useEffect(() => {
     const tabChangesListener = async () => {
-      const tabs = await getCurrentTabGroups();
+      const tabs = await chrome.runtime.sendMessage({ action: 'GET_CURRENT_TAB_GROUPS' });
       setCurrentTabGroups(tabs);
     };
 
-    chrome.tabs.onAttached.addListener(tabChangesListener);
-    chrome.tabs.onCreated.addListener(tabChangesListener);
-    chrome.tabs.onMoved.addListener(tabChangesListener);
-    chrome.tabs.onRemoved.addListener(tabChangesListener);
-    chrome.tabs.onReplaced.addListener(tabChangesListener);
-    chrome.tabs.onUpdated.addListener(tabChangesListener);
-    chrome.tabGroups.onUpdated.addListener(tabChangesListener);
+    const events = [
+      chrome.tabs.onAttached,
+      chrome.tabs.onCreated,
+      chrome.tabs.onMoved,
+      chrome.tabs.onRemoved,
+      chrome.tabs.onReplaced,
+      chrome.tabs.onUpdated,
+      chrome.tabGroups.onUpdated,
+    ];
 
-    return () => {
-      chrome.tabs.onAttached.removeListener(tabChangesListener);
-      chrome.tabs.onCreated.removeListener(tabChangesListener);
-      chrome.tabs.onMoved.removeListener(tabChangesListener);
-      chrome.tabs.onRemoved.removeListener(tabChangesListener);
-      chrome.tabs.onReplaced.removeListener(tabChangesListener);
-      chrome.tabs.onUpdated.removeListener(tabChangesListener);
-      chrome.tabGroups.onUpdated.removeListener(tabChangesListener);
-    };
+    events.forEach((event) => event.addListener(tabChangesListener));
+
+    return () => events.forEach((event) => event.removeListener(tabChangesListener));
   }, []);
 
   // Listen for storage changes
@@ -80,7 +64,7 @@ export const TabGroupsProvider = ({ children }) => {
         .map(([key, { newValue }]) => [key, newValue]);
 
       const deletedValues = Object.entries(changes)
-        .filter(([key, { newValue }]) => newValue === undefined)
+        .filter(([, { newValue }]) => newValue === undefined)
         .map(([key]) => key);
 
       setSavedTabGroups((savedGroups) => {
@@ -98,6 +82,7 @@ export const TabGroupsProvider = ({ children }) => {
         if (Object.keys(newValue).length) setOptions(newValue);
       }
     };
+
     chrome.storage.onChanged.addListener(dataChangeListener);
 
     return () => {
@@ -115,6 +100,7 @@ export const TabGroupsProvider = ({ children }) => {
         positions,
         setPositions,
         options,
+        colors,
       }}
     >
       {children}
