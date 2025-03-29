@@ -19,9 +19,8 @@ const TabIcon = ({ tab, isSaved }) => {
           alt=""
           src={
             tab.favIconUrl ||
-            (tab.url.startsWith('chrome')
-              ? 'icons/chrome-favicon.png'
-              : 'icons/generic-favicon.png')
+            `https://www.google.com/s2/favicons?domain=${new URL(tab.url).hostname}` ||
+            'icons/generic-favicon.png'
           }
         />
       </a>

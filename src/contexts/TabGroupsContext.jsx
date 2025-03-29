@@ -6,11 +6,12 @@ export const TabGroupsProvider = ({ children }) => {
   const [currentTabGroups, setCurrentTabGroups] = useState({});
   const [savedTabGroups, setSavedTabGroups] = useState({});
   const [positions, setPositions] = useState([]);
+  const [options, setOptions] = useState({});
 
   const getCurrentTabGroups = async () => {
     const currentTabGroups = {};
     const currentTabs = await chrome.tabs.query({});
-    for (const tab of currentTabs.filter((tab) => tab.url !== 'chrome://newtab/')) {
+    for (const tab of currentTabs.filter((tab) => !tab.url?.startsWith('chrome'))) {
       const isGroup = tab.groupId > -1;
       const idToUse = isGroup ? tab.groupId : tab.windowId;
 
@@ -38,12 +39,12 @@ export const TabGroupsProvider = ({ children }) => {
       const data = await chrome.storage.sync.get();
       const { options, positions: savedPositions, ...groups } = data;
       setSavedTabGroups(groups ?? {});
-      console.log({ keys: Object.keys(groups) });
+      setOptions(options ?? {});
       if (!savedPositions) setPositions(Object.keys(groups));
       else if (savedPositions && savedPositions.length === 0) setPositions(Object.keys(groups));
       else setPositions(savedPositions);
     })();
-  }, [setSavedTabGroups, setPositions]);
+  }, [setSavedTabGroups, setPositions, setOptions]);
 
   // Listen for tab events
   useEffect(() => {
@@ -92,6 +93,10 @@ export const TabGroupsProvider = ({ children }) => {
         const { newValue } = changes['positions'];
         if (newValue?.length) setPositions(newValue);
       }
+      if (Object.keys(changes).includes('options')) {
+        const { newValue } = changes['options'];
+        if (Object.keys(newValue).length) setOptions(newValue);
+      }
     };
     chrome.storage.onChanged.addListener(dataChangeListener);
 
@@ -109,6 +114,7 @@ export const TabGroupsProvider = ({ children }) => {
         setSavedTabGroups,
         positions,
         setPositions,
+        options,
       }}
     >
       {children}

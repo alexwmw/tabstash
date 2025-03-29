@@ -13,19 +13,24 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
     const saveTabGroup = async () => {
       const { positions } = await chrome.storage.sync.get('positions');
       const key = Date.now().toString();
-      await chrome.storage.sync.set({
-        positions: [key, ...(positions ?? [])],
-        [key]: {
-          title: isGroup && title ? title : new Date().toLocaleString(),
-          tabs: tabs.map(({ id, url, favIconUrl }) => ({
-            id: Number(id) + Number(key),
-            url,
-            favIconUrl,
-          })),
-          dateCreated: key,
-          color,
-        },
-      });
+      try {
+        await chrome.storage.sync.set({
+          positions: [key, ...(positions ?? [])],
+          [key]: {
+            title: isGroup && title ? title : new Date().toLocaleString(),
+            tabs: tabs.map(({ id, url, favIconUrl }) => ({
+              id: Number(id) + Number(key),
+              url,
+              favIconUrl: favIconUrl.length < 200 ? favIconUrl : null,
+            })),
+            dateCreated: key,
+            color,
+          },
+        });
+      } catch (e) {
+        console.error(e);
+        alert(`Woops! That\s a few too many tabs. Try saving them in smaller groups.`);
+      }
     };
     saveTabGroup();
   };
@@ -57,23 +62,16 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
     });
   };
   const handleUngroupClick = () => {
-    tabs.forEach((tab) => {
-      chrome.tabs.create({ url: tab.url, windowId: tab.windowId, active: false });
-      chrome.tabs.remove(tab.id);
-    });
+    chrome.runtime.sendMessage({ action: 'UNGROUP_TABS', tabs });
   };
 
   const handleRestoreWindow = async () => {
-    const window = chrome.windows.create({ url: tabs.map((tab) => tab.url) });
+    await chrome.runtime.sendMessage({ action: 'OPEN_AS_WINDOW', tabs, title, color });
   };
 
-  const handleRestoreTabs = () => {
-    tabs.forEach((tab) => {
-      chrome.tabs.create({ url: tab.url });
-    });
+  const handleRestoreTabs = async () => {
+    await chrome.runtime.sendMessage({ action: 'OPEN_AS_TABS', tabs, title, color });
   };
-
-  const handleRestoreGroup = () => {};
 
   const ToggleSaveButton = !isSaved ? (
     <Button title="Stash these tabs" onClick={handleSaveBtnClick} type={'smallIcon'}>
@@ -92,23 +90,6 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
 
   const RestoreButtons = isSaved && (
     <>
-      {/*<Button*/}
-      {/*  title={'Restore as group'}*/}
-      {/*  type={'smallIcon'}*/}
-      {/*  onClick={() => {*/}
-      {/*    const newTabIds = [];*/}
-      {/*    tabs.forEach(async (tab) => {*/}
-      {/*      const t = await chrome.tabs.create({ url: tab.url });*/}
-      {/*      newTabIds.push(t.id);*/}
-      {/*    });*/}
-      {/*    console.log({ newTabIds });*/}
-      {/*    chrome.tabs.group({ tabIds: newTabIds }, (groupId) => {*/}
-      {/*      chrome.tabGroups.update(Number(groupId), { title: 'New group' });*/}
-      {/*    });*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  ➡️ group*/}
-      {/*</Button>*/}
       <Button title={'Open tabs in this window'} type={'smallIcon'} onClick={handleRestoreTabs}>
         <FaArrowUpFromBracket />
       </Button>

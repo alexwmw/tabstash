@@ -1,4 +1,3 @@
-import useGetTabGroups from '../hooks/useGetTabGroups.jsx';
 import { useEffect, useState } from 'react';
 import TabGroupList from './TabGroupList.jsx';
 import { useTabGroups } from '../contexts/TabGroupsContext.jsx';

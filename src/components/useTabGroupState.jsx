@@ -33,7 +33,9 @@ const useTabGroupState = ({
   useEffect(() => {
     if (groupColor) {
       const colorGroupNames = options?.colorGroupNames?.value ?? {};
-      const newName = colorGroupNames[groupColor] || `${groupColor} group`;
+      console.log({ colorGroupNames });
+      const colourGroupNameFromOptions = colorGroupNames[groupColor]?.trim() || null;
+      const newName = colourGroupNameFromOptions ?? `${groupColor} group`;
       setColorGroupName(newName);
     }
     if (isGroup) {
@@ -53,7 +55,7 @@ const useTabGroupState = ({
         },
       });
     }
-  }, [title, groupColor]);
+  }, [title, groupColor, options]);
 
   function cycleColors() {
     if (isGroup) {

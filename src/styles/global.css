@@ -37,6 +37,7 @@ img {
     align-items: center;
     position: relative;
     top: -2.5px;
+    isolation: isolate;
 
     > * {
         grid-area: stack;

@@ -28,12 +28,13 @@ const TabGroup = (props) => {
   } = useTabGroupState(props);
 
   const inputRef = useRef();
-  const { CloseButton, GroupButton, ToggleSaveButton, RestoreButtons } = useTabGroupButtons({
-    ...props,
-    title,
-    color: groupColor,
-    setColor: setGroupColor,
-  });
+  const { CloseButton, GroupButton, UngroupButton, ToggleSaveButton, RestoreButtons } =
+    useTabGroupButtons({
+      ...props,
+      title,
+      color: groupColor,
+      setColor: setGroupColor,
+    });
 
   return (
     <div
@@ -70,7 +71,7 @@ const TabGroup = (props) => {
                   <button
                     onClick={cycleColors}
                     className={clsx(
-                      'font-semi-bold cursor-pointer rounded p-0.5 pr-1 pl-1 text-[10px]',
+                      'font-semi-bold cursor-pointer rounded p-0.5 pr-1 pl-1 text-[10px] transition-all hover:brightness-95',
                       groupColor ? getTagColorClasses(groupColor) : 'bg-gray-50 text-gray-400'
                     )}
                   >
@@ -79,6 +80,7 @@ const TabGroup = (props) => {
                 </ToolTip>
               )}
               {GroupButton}
+              {UngroupButton}
             </div>
             <div className="flex gap-2">
               {RestoreButtons}
