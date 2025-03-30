@@ -1,6 +1,8 @@
 import ToolTip from './ToolTip.jsx';
 
 const TabIcon = ({ tab, isSaved }) => {
+  const url = tab.url && new URL(tab?.url);
+  const favIconUrl = url && `https://www.google.com/s2/favicons?domain=${url.hostname}`;
   return (
     <ToolTip className="flex-shrink-0" id={tab.id} text={tab.title ?? tab.url}>
       <button
@@ -18,11 +20,7 @@ const TabIcon = ({ tab, isSaved }) => {
         <img
           className="h-5 w-5 cursor-pointer hover:drop-shadow-sm"
           alt=""
-          src={
-            tab.favIconUrl ||
-            `https://www.google.com/s2/favicons?domain=${new URL(tab.url).hostname}` ||
-            'icons/generic-favicon.png'
-          }
+          src={tab.favIconUrl || favIconUrl || 'icons/generic-favicon.png'}
         />
       </button>
     </ToolTip>
