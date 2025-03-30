@@ -5,17 +5,17 @@ import clsx from 'clsx';
 import { getTagColorClasses } from '../utils.js';
 
 function Options() {
-  const [options, setOptions] = useState({});
+  const [options, setOptions] = useState(null);
 
   useEffect(() => {
     (async () => {
       const savedOptions = await chrome.runtime.sendMessage({ action: 'GET_OPTIONS' });
-      setOptions(savedOptions ?? {});
+      if (savedOptions) setOptions(savedOptions);
     })();
   }, []);
 
   useEffect(() => {
-    chrome.runtime.sendMessage({ action: 'SET_OPTIONS', options });
+    if (options) chrome.runtime.sendMessage({ action: 'SET_OPTIONS', options });
   }, [options]);
 
   const handleColorValueChange = (optionKey, color, e) => {
@@ -47,21 +47,25 @@ function Options() {
     }[optionKey];
   };
 
-  const OptionFields = Object.entries(options).map(([optionKey, optionData]) => {
-    return (
-      <div className="flex flex-col gap-4" key={optionKey}>
-        <h3 className="text-[16px] font-semibold">{optionData.label}</h3>
-        <p className="max-w-[80ch]">{optionData.description}</p>
-        {GetOptionInputs(optionKey, optionData.value)}
-      </div>
-    );
-  });
+  const OptionFields =
+    options &&
+    Object.entries(options ?? {}).map(([optionKey, optionData]) => {
+      return (
+        <div className="flex flex-col gap-4" key={optionKey}>
+          <h3 className="text-[16px] font-semibold">{optionData.label}</h3>
+          <p className="max-w-[80ch]">{optionData.description}</p>
+          {GetOptionInputs(optionKey, optionData.value)}
+        </div>
+      );
+    });
 
   return (
-    <div className="m-auto mt-5 w-[50%] min-w-96 overflow-clip rounded border border-gray-200 bg-gray-100">
-      <PrimaryHeader className={'mb-4 bg-white'} />
-      <h2 className="p-2 text-xl">Options</h2>
-      <div className="flex flex-col gap-4 p-4">{OptionFields}</div>
+    <div id="options" className="h-full w-full p-5 backdrop-blur backdrop-brightness-50">
+      <div className="m-auto w-[50%] min-w-96 overflow-clip rounded border border-gray-200 bg-gray-100">
+        <PrimaryHeader className={'mb-4 bg-white'} />
+        <h2 className="p-2 text-xl">Options</h2>
+        <div className="flex flex-col gap-4 p-4">{options && OptionFields}</div>
+      </div>
     </div>
   );
 }

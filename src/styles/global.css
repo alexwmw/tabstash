@@ -4,9 +4,14 @@
 
 }
 
-body {
-
+body:has(#options) {
+    height: 100vh;
 }
+
+#root:has(#options) {
+    height: 100%
+}
+
 
 img {
     max-width: 100%;
