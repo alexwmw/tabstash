@@ -38,6 +38,7 @@ export default defineConfig([
         ...globals.browser,
         ...globals.node,
         ...globals.webextensions,
+        ...globals.jest,
       },
     },
   },

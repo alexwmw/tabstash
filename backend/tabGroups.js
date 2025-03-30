@@ -30,7 +30,7 @@ export const addTabGroup = async ({ isGroup, title, tabs, color }) => {
   const key = Date.now().toString();
   const newGroup = {
     title: isGroup && title ? title : new Date().toLocaleString(),
-    tabs: tabs.map(createSavedTab),
+    tabs: tabs.map((t) => createSavedTab(t)),
     dateCreated: key,
     color,
   };
