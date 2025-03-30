@@ -1,4 +1,5 @@
 import Button from './Button.jsx';
+import { BiSolidCog } from 'react-icons/bi';
 
 const OptionsButton = ({ text = 'Options' }) => {
   return (
@@ -7,7 +8,7 @@ const OptionsButton = ({ text = 'Options' }) => {
       type={'mediumIcon'}
       onClick={() => chrome.runtime.openOptionsPage()}
     >
-      {text}
+      <BiSolidCog />
     </Button>
   );
 };

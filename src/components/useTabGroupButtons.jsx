@@ -1,12 +1,13 @@
 import Button from './Button.jsx';
-import { FaArrowCircleDown, FaTimes } from 'react-icons/fa';
 import {
-  FaArrowUpFromBracket,
-  FaFolderMinus,
-  FaFolderPlus,
-  FaTrash,
-  FaWindowRestore,
-} from 'react-icons/fa6';
+  BiArchiveIn,
+  BiSolidFolderMinus,
+  BiSolidFolderPlus,
+  BiTrash,
+  BiUpload,
+  BiWindowOpen,
+  BiX,
+} from 'react-icons/bi';
 
 const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, color }) => {
   const handleSaveBtnClick = async () => {
@@ -40,16 +41,11 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
 
   const ToggleSaveButton = !isSaved ? (
     <Button title="Stash these tabs" onClick={handleSaveBtnClick} type={'smallIcon'}>
-      <div className="stacked-grid h-3 w-3 rounded-[2.5px] bg-gray-800">
-        <div className="flex items-center justify-center">
-          <div className="h-2 w-2 bg-white"></div>
-        </div>
-        <FaArrowCircleDown className="text-[12px]" />
-      </div>
+      <BiArchiveIn />
     </Button>
   ) : (
     <Button title="Delete saved group" onClick={handleForgetClick} type={'smallIcon'}>
-      <FaTrash />
+      <BiTrash />
     </Button>
   );
 
@@ -61,7 +57,7 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
         type={'smallIcon'}
         onClick={handleRestoreTabs}
       >
-        <FaArrowUpFromBracket />
+        <BiUpload />
       </Button>
       <Button
         disabled={!tabs || tabs.length === 0}
@@ -69,24 +65,24 @@ const useTabGroupButtons = ({ tabs, title, groupId, isGroup, isSaved, setColor, 
         type={'smallIcon'}
         onClick={handleRestoreWindow}
       >
-        <FaWindowRestore />
+        <BiWindowOpen />
       </Button>
     </>
   );
   const CloseButton = !isSaved && (
     <Button title="Close these tabs" onClick={handleCloseBtnClick} type={'smallIcon'}>
-      <FaTimes />
+      <BiX />
     </Button>
   );
   const GroupButton = !isSaved && !isGroup && (
     <Button title="Group these tabs" onClick={handleGroupClick} type={'smallIcon'}>
-      <FaFolderPlus />
+      <BiSolidFolderPlus />
     </Button>
   );
 
   const UngroupButton = !isSaved && isGroup && (
     <Button title="Ungroup tabs" onClick={handleUngroupClick} type={'smallIcon'}>
-      <FaFolderMinus />
+      <BiSolidFolderMinus />
     </Button>
   );
   return { CloseButton, ToggleSaveButton, RestoreButtons, GroupButton, UngroupButton };
