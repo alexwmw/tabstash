@@ -35,3 +35,5 @@ webpack/
 # IDEs and editors
 .vscode/
 .idea/
+
+meta/
